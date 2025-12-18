@@ -42,20 +42,20 @@ The project is complete when:
 - [ ] Test page loads and plays correctly
 
 ### Phase 2: Hetzner VPS Setup
-- [ ] Provision Hetzner CX22 VPS (Ubuntu 22.04)
-- [ ] SSH access configured
-- [ ] Install dependencies: Xvfb, Chromium, ffmpeg, pulseaudio
+- [x] Provision Hetzner VPS (Ubuntu 24.04, 2GB RAM)
+- [x] SSH access configured (5.78.42.22)
+- [x] Install dependencies: Xvfb, Chromium, ffmpeg, pulseaudio, xdotool
 - [ ] Test headless browser can render the page
 
 ### Phase 3: Streaming Pipeline
-- [ ] Create streaming script (start Xvfb, launch Chromium, run ffmpeg)
-- [ ] Configure ffmpeg for YouTube RTMP output
+- [x] Create streaming script (start Xvfb, launch Chromium, run ffmpeg)
+- [x] Configure ffmpeg for YouTube RTMP output
 - [ ] Test stream to YouTube (unlisted first)
 - [ ] Tune encoding settings (resolution, bitrate, audio)
 
 ### Phase 4: Production Hardening
-- [ ] Create systemd service for auto-start
-- [ ] Add crash recovery / restart logic
+- [x] Create systemd service for auto-start
+- [x] Add crash recovery / restart logic (Restart=always)
 - [ ] Set up basic monitoring (is stream alive?)
 - [ ] Go live (public stream)
 
@@ -116,6 +116,7 @@ ffmpeg -f x11grab -video_size 1920x1080 -i :99 \
 
 ## Current Status
 
-**Phase:** 1 complete - ready for Phase 2
+**Phase:** 3 - Ready to test stream
 **Live Site:** https://ldraney.github.io/lofi-stream/
-**Next Action:** Set up Hetzner VPS for 24/7 streaming
+**Server:** 5.78.42.22 (scripts deployed to /opt/lofi-stream/)
+**Next Action:** Get YouTube stream key and test!

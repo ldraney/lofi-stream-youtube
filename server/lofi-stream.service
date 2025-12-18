@@ -1,0 +1,15 @@
+[Unit]
+Description=Lofi Stream to YouTube
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/lofi-stream
+Environment=YOUTUBE_KEY=YOUR_STREAM_KEY_HERE
+ExecStart=/opt/lofi-stream/stream.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
