@@ -71,7 +71,7 @@ echo "Starting ffmpeg stream to YouTube..."
 ffmpeg \
     -f x11grab -video_size $RESOLUTION -framerate $FPS -i :$DISPLAY_NUM \
     -f pulse -i virtual_speaker.monitor \
-    -c:v libx264 -preset veryfast -b:v 2500k -minrate 2500k -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
+    -c:v libx264 -preset veryfast -b:v 2500k -minrate 2500k -maxrate 2500k -bufsize 2500k -x264-params "nal-hrd=cbr:force-cfr=1" -pix_fmt yuv420p -g 60 \
     -c:a aac -b:a 128k -ar 44100 \
     -f flv "${YOUTUBE_URL}/${YOUTUBE_KEY}"
 
