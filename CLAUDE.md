@@ -37,8 +37,8 @@ The project is complete when:
 ### Phase 1: Lofi HTML Page
 - [x] Create basic HTML/CSS lofi page
 - [x] Add ambient visuals (rain, particles, animations)
-- [ ] Add lofi audio (need royalty-free source)
-- [ ] Deploy to GitHub Pages
+- [x] Add lofi audio (Web Audio API generative - no copyright issues!)
+- [x] Deploy to GitHub Pages - https://ldraney.github.io/lofi-stream/
 - [ ] Test page loads and plays correctly
 
 ### Phase 2: Hetzner VPS Setup
@@ -72,11 +72,10 @@ The project is complete when:
 ```
 lofi-stream/
 ├── CLAUDE.md           # This file
-├── site/               # GitHub Pages lofi site
-│   ├── index.html
-│   ├── style.css
-│   └── assets/
-├── server/             # VPS scripts
+├── docs/               # GitHub Pages lofi site (renamed from site/)
+│   ├── index.html      # Main page with visuals + Web Audio API
+│   └── style.css       # All animations and styling
+├── server/             # VPS scripts (to be created)
 │   ├── stream.sh       # Main streaming script
 │   ├── setup.sh        # Server setup script
 │   └── lofi-stream.service  # systemd unit
@@ -117,5 +116,6 @@ ffmpeg -f x11grab -video_size 1920x1080 -i :99 \
 
 ## Current Status
 
-**Phase:** 1 (Lofi HTML Page)
-**Next Action:** Add audio + deploy to GitHub Pages
+**Phase:** 1 complete - ready for Phase 2
+**Live Site:** https://ldraney.github.io/lofi-stream/
+**Next Action:** Set up Hetzner VPS for 24/7 streaming
