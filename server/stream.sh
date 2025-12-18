@@ -59,15 +59,10 @@ chromium-browser \
 CHROME_PID=$!
 sleep 5
 
-# Simulate clicks to start audio (Web Audio API needs user interaction)
-echo "Triggering audio start..."
+# Simulate click to start audio (Web Audio API needs user interaction in some cases)
+# Using xdotool if available
 if command -v xdotool &> /dev/null; then
-    sleep 3
     xdotool mousemove 960 540 click 1
-    sleep 1
-    xdotool key space
-    sleep 1
-    xdotool click 1
 fi
 sleep 2
 
@@ -76,8 +71,8 @@ echo "Starting ffmpeg stream to YouTube..."
 ffmpeg \
     -f x11grab -video_size $RESOLUTION -framerate $FPS -i :$DISPLAY_NUM \
     -f pulse -i virtual_speaker.monitor \
-    -c:v libx264 -preset veryfast -crf 23 -maxrate 4500k -bufsize 9000k -pix_fmt yuv420p -g 60 \
-    -af "volume=3.0" -c:a aac -b:a 192k -ar 44100 \
+    -c:v libx264 -preset veryfast -maxrate 3000k -bufsize 6000k -pix_fmt yuv420p -g 60 \
+    -c:a aac -b:a 128k -ar 44100 \
     -f flv "${YOUTUBE_URL}/${YOUTUBE_KEY}"
 
 # Cleanup on exit

@@ -134,4 +134,39 @@ journalctl -u lofi-stream -f
 
 # Restart stream
 systemctl restart lofi-stream
+
+# Monitor resources
+top -bn1 | head -15 && free -h
 ```
+
+---
+
+## Performance Analysis
+
+**Resource usage with 1 stream (CX22 - 2 vCPU, 2GB RAM):**
+
+| Resource | Used | Capacity | Status |
+|----------|------|----------|--------|
+| CPU | ~91% | 2 vCPU | MAXED |
+| RAM | 928MB (49%) | 1.9GB | OK |
+| Network | ~1 Mbps | ~1 Gbps | OK |
+| Disk | 3.9GB (11%) | 38GB | OK |
+
+**Bottleneck:** CPU (ffmpeg ~90%, Chromium ~100%)
+
+**This server can run exactly 1 stream.**
+
+### Scaling Options
+
+| Streams | Server | vCPU | Cost/mo |
+|---------|--------|------|---------|
+| 1 | CX22 | 2 | €4.50 |
+| 2-3 | CX32 | 4 | €7.50 |
+| 4-6 | CX42 | 8 | €14 |
+| 10+ | Multiple VPS | - | €45+ |
+
+### Optimization Ideas (to reduce CPU)
+- Drop to 720p (saves ~40% CPU)
+- Lower framerate to 24fps
+- Use ffmpeg `-preset ultrafast` instead of `veryfast`
+- Pre-render video loop instead of live capture
