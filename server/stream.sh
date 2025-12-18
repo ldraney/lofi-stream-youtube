@@ -78,13 +78,18 @@ sleep 3
 # Ensure Chrome audio goes to virtual speaker
 pactl list short sink-inputs | awk '{print $1}' | xargs -I {} pactl move-sink-input {} virtual_speaker 2>/dev/null || true
 
-# Start streaming with ffmpeg - optimized for low CPU
+# Start streaming with ffmpeg - with proper buffering
 echo "Starting ffmpeg stream to YouTube..."
 ffmpeg \
-    -f x11grab -video_size $RESOLUTION -framerate $FPS -i :$DISPLAY_NUM \
+    -thread_queue_size 1024 \
+    -f x11grab -video_size $RESOLUTION -framerate $FPS -draw_mouse 0 -i :$DISPLAY_NUM \
+    -thread_queue_size 1024 \
     -f pulse -i virtual_speaker.monitor \
-    -c:v libx264 -preset ultrafast -tune zerolatency -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 48 \
+    -c:v libx264 -preset ultrafast -tune zerolatency \
+    -b:v 1500k -maxrate 1500k -bufsize 3000k \
+    -pix_fmt yuv420p -g 48 \
     -c:a aac -b:a 128k -ar 44100 \
+    -flvflags no_duration_filesize \
     -f flv "${YOUTUBE_URL}/${YOUTUBE_KEY}"
 
 # Cleanup on exit
