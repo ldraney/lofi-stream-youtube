@@ -116,15 +116,14 @@ ffmpeg -f x11grab -video_size 1920x1080 -i :99 \
 
 ## Current Status
 
-**Phase:** MVP complete, investigating issues
+**Phase:** Production - fully working!
 **GitHub Pages:** https://ldraney.github.io/lofi-stream/
 **Server:** 5.78.42.22 (systemd enabled, auto-restarts)
-**YouTube:** Stream disconnected - needs restart
+**YouTube:** Live and streaming with audio!
 
-### Known Issues (see [Issue #1](https://github.com/ldraney/lofi-stream/issues/1))
+### Resolved Issues
 
-1. **Audio not working on GitHub Pages site** - Web Audio API may need user interaction
-2. **YouTube stream disconnected** - YouTube ended stream, server still running
+1. **Audio not reaching YouTube** - Fixed! See "Lessons Learned" below
 
 ### Quick Commands
 ```bash
@@ -178,3 +177,47 @@ top -bn1 | head -15 && free -h
 - Lower framerate to 24fps
 - Use ffmpeg `-preset ultrafast` instead of `veryfast`
 - Pre-render video loop instead of live capture
+
+---
+
+## Lessons Learned
+
+### PulseAudio + ffmpeg Audio Issue (Dec 2024)
+
+**Problem:** YouTube stream had video but NO audio, even though local audio capture tests worked fine.
+
+**Symptoms:**
+- `pactl list sink-inputs` showed Chromium playing audio
+- `parec` could capture audio samples locally
+- ffmpeg logs showed it was "reading" from `virtual_speaker.monitor`
+- BUT `pactl list source-outputs` was **empty** - ffmpeg wasn't actually connected!
+
+**Root Cause:**
+ffmpeg didn't have the `PULSE_SERVER` environment variable set. When running under systemd, ffmpeg couldn't find the PulseAudio server socket automatically.
+
+**Fix:**
+Export `PULSE_SERVER` explicitly before running ffmpeg:
+```bash
+export XDG_RUNTIME_DIR=/run/user/0
+export PULSE_SERVER=unix:/run/user/0/pulse/native
+
+# Then run ffmpeg with the same env
+PULSE_SERVER=unix:/run/user/0/pulse/native ffmpeg \
+    -f pulse -i virtual_speaker.monitor \
+    ...
+```
+
+**Debugging Commands:**
+```bash
+# Check if ffmpeg is ACTUALLY reading from PulseAudio
+pactl list source-outputs  # Should show ffmpeg as a client
+
+# If empty, ffmpeg is NOT connected!
+# Check what pulse server pactl uses
+pactl info | grep "Server String"
+
+# Test audio levels
+ffmpeg -f pulse -i virtual_speaker.monitor -af volumedetect -t 2 -f null -
+```
+
+**Key Insight:** Just because ffmpeg says `Input #1, pulse, from 'virtual_speaker.monitor'` doesn't mean it's actually receiving audio. Always verify with `pactl list source-outputs`.
