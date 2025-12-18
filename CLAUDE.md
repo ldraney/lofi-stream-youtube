@@ -5,6 +5,16 @@ YouTube streaming component (Night City theme) of the lofi-stream project. Captu
 > **Full project docs & roadmap:** [lofi-stream-docs](https://github.com/ldraney/lofi-stream-docs)
 > **Sister project:** [lofi-stream-twitch](https://github.com/ldraney/lofi-stream-twitch) (Coffee Shop theme)
 
+## Secrets
+
+```bash
+# Stream key and RTMP URL
+cat ~/api-secrets/lofi-stream/platforms/youtube.env
+
+# SSH key for servers
+~/api-secrets/hetzner-server/id_ed25519
+```
+
 ## Quick Reference
 
 ```bash
