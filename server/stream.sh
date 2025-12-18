@@ -6,7 +6,7 @@ set -e
 
 # Config
 DISPLAY_NUM=99
-RESOLUTION="1920x1080"
+RESOLUTION="1280x720"
 FPS=30
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2"
 PAGE_URL="https://ldraney.github.io/lofi-stream/"
@@ -53,7 +53,7 @@ chromium-browser \
     --disable-dev-shm-usage \
     --kiosk \
     --autoplay-policy=no-user-gesture-required \
-    --window-size=1920,1080 \
+    --window-size=1280,720 \
     --window-position=0,0 \
     "$PAGE_URL" &
 CHROME_PID=$!
@@ -71,7 +71,7 @@ echo "Starting ffmpeg stream to YouTube..."
 ffmpeg \
     -f x11grab -video_size $RESOLUTION -framerate $FPS -i :$DISPLAY_NUM \
     -f pulse -i virtual_speaker.monitor \
-    -c:v libx264 -preset veryfast -maxrate 3000k -bufsize 6000k -pix_fmt yuv420p -g 60 \
+    -c:v libx264 -preset veryfast -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
     -c:a aac -b:a 128k -ar 44100 \
     -f flv "${YOUTUBE_URL}/${YOUTUBE_KEY}"
 
