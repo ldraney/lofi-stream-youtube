@@ -1,0 +1,52 @@
+# .github/workflows/cleanup-dev.yml
+# Clean up your repo's deployment from dev server
+# Run this when you're done testing
+
+name: Cleanup Dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm cleanup'
+        required: true
+
+env:
+  DEV_USER: lofidev
+  DEV_DIR: /home/lofidev/streams
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'yes'
+
+    steps:
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEV_SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.DEV_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Stop processes and cleanup
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+
+          ssh -i ~/.ssh/id_ed25519 ${DEV_USER}@${{ secrets.DEV_SERVER_HOST }} << EOF
+            set -e
+            echo "Cleaning up ${REPO_NAME}..."
+
+            # Kill any running processes from this repo
+            pkill -f "${REPO_NAME}" || true
+
+            # Remove the deployment
+            rm -rf ${DEV_DIR}/${REPO_NAME}
+
+            echo "Cleanup complete!"
+            echo "Remaining in ${DEV_DIR}:"
+            ls -la ${DEV_DIR} || echo "(empty)"
+          EOF
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

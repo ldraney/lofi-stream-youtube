@@ -1,0 +1,89 @@
+# .github/workflows/deploy-dev.yml
+# Deploy to dev server for testing
+# Copy this to your repo's .github/workflows/ directory
+
+name: Deploy to Dev
+
+on:
+  # Manual trigger with optional branch
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: false
+        default: 'main'
+
+  # Or trigger on PR (for testing before merge)
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'docs/**'
+
+env:
+  DEV_USER: lofidev
+  DEV_DIR: /home/lofidev/streams
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    # Don't run on forks (they won't have secrets)
+    if: github.repository_owner == 'ldraney'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEV_SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.DEV_SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to dev server
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          DEPLOY_PATH="${DEV_DIR}/${REPO_NAME}"
+
+          ssh -i ~/.ssh/id_ed25519 ${DEV_USER}@${{ secrets.DEV_SERVER_HOST }} << EOF
+            set -e
+            echo "Deploying ${REPO_NAME} to dev server..."
+
+            # Create directory if needed
+            mkdir -p ${DEPLOY_PATH}
+            cd ${DEPLOY_PATH}
+
+            # Clone or pull
+            if [ -d ".git" ]; then
+              echo "Updating existing repo..."
+              git fetch origin
+              git reset --hard origin/${{ github.event.inputs.branch || 'main' }}
+            else
+              echo "Cloning fresh..."
+              cd ..
+              rm -rf ${REPO_NAME}
+              git clone --depth 1 -b ${{ github.event.inputs.branch || 'main' }} \
+                https://github.com/${GITHUB_REPOSITORY}.git
+            fi
+
+            echo "Deploy complete!"
+            ls -la ${DEPLOY_PATH}
+          EOF
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
+
+  # Optional: Run a test stream (uncomment if needed)
+  # test-stream:
+  #   needs: deploy-dev
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Start test stream
+  #       run: |
+  #         ssh -i ~/.ssh/id_ed25519 ${DEV_USER}@${{ secrets.DEV_SERVER_HOST }} << EOF
+  #           cd ${DEV_DIR}/${GITHUB_REPOSITORY#*/}
+  #           # Run your test script here
+  #           ./server/test-stream.sh
+  #         EOF
